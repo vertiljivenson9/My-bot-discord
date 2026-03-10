@@ -1,258 +1,130 @@
-# 🤖 Bot de Discord con IA - Cloudflare Worker
+# 🤖 Asistente Profesional - Discord Bot
 
-Bot de Discord conversacional impulsado por IA, desplegado en Cloudflare Workers para máxima velocidad y escalabilidad.
+Bot de Discord con IA conversacional, desplegado en Cloudflare Workers. Responde como un asistente profesional durante tu ausencia, sin parecer un bot.
 
 ## ✨ Características
 
-- **IA Conversacional**: Respuestas naturales con toque humano usando z-ai-web-dev-sdk
-- **Memoria de Conversación**: Contexto persistente usando Cloudflare KV
-- **Comandos Slash**: Interacción moderna con Discord
-- **Seguridad**: Verificación de firmas Ed25519
-- **Serverless**: Desplegado en Cloudflare Workers (sin servidor que mantener)
+- **Tono profesional y humano** - No parece un bot
+- **Comandos Slash** - `/consultar`, `/info`, `/nueva`
+- **Memoria de conversación** - Contexto persistente con Cloudflare KV
+- **Seguridad** - Verificación de firma Ed25519
+- **Serverless** - Desplegado en Cloudflare Workers
 
-## 📋 Requisitos Previos
+## 🚀 Despliegue desde GitHub a Cloudflare
 
-1. **Cuenta de Discord Developer**: [Portal de Desarrolladores](https://discord.com/developers/applications)
-2. **Cuenta de Cloudflare**: [Cloudflare Dashboard](https://dash.cloudflare.com)
-3. **Wrangler CLI**: Herramienta de línea de comandos de Cloudflare
-4. **Node.js 18+**: Entorno de ejecución
+### Paso 1: Conectar Repositorio
 
-## 🚀 Guía de Instalación
+1. Ve a [Cloudflare Dashboard](https://dash.cloudflare.com)
+2. Menú **Workers & Pages** → **Create application**
+3. Pestaña **Workers** → **Create Worker**
+4. Nombre: `asistente-profesional`
+5. Click **Deploy**
+6. Ve a **Settings** → **Build deployments**
+7. Activa **Connect a Git repository**
+8. Selecciona `vertiljivenson9/My-bot-discord`
+9. Rama: `main`
 
-### Paso 1: Crear la Aplicación de Discord
+### Paso 2: Crear KV Namespace
 
-1. Ve al [Portal de Desarrolladores de Discord](https://discord.com/developers/applications)
-2. Haz clic en **"New Application"**
-3. Dale un nombre a tu bot (ej: "MiBotIA")
-4. Guarda el **Application ID** (lo necesitarás más tarde)
+1. Ve a **Workers & Pages** → **KV**
+2. Click **Create a namespace**
+3. Nombre: `CONVERSATIONS`
+4. Click **Add**
+5. **Copia el ID** generado
 
-### Paso 2: Configurar el Bot
+### Paso 3: Vincular KV al Worker
 
-1. En el menú lateral, ve a **"Bot"**
-2. Haz clic en **"Add Bot"**
-3. Guarda el **Token** del bot (¡guárdalo seguro!)
-4. En la misma página, ve a **"Public Key"** y guárdala también
+1. Ve a tu Worker → **Settings** → **Variables**
+2. Sección **KV Namespace Bindings** → **Add binding**
+   - Variable name: `CONVERSATIONS`
+   - KV namespace: selecciona el creado
+3. Click **Save**
 
-5. **Habilita los Intents necesarios**:
-   - ✅ MESSAGE CONTENT INTENT
-   - ✅ SERVER MEMBERS INTENT (opcional)
+### Paso 4: Configurar Secretos
 
-### Paso 3: Configurar Interacciones
+En tu Worker → **Settings** → **Variables** → **Add variable**
 
-1. Ve a **"General Information"** en el menú lateral
-2. Copia el **Public Key** y el **Application ID**
+| Variable | Valor |
+|----------|-------|
+| `DISCORD_BOT_TOKEN` | Tu token del bot de Discord |
+| `DISCORD_PUBLIC_KEY` | Tu clave pública de Discord |
+| `DISCORD_APPLICATION_ID` | Tu Application ID de Discord |
 
-### Paso 4: Instalar Dependencias
+⚠️ **Marca cada una como "Secret"** (candado cerrado)
 
-```bash
-cd discord-bot-cloudflare
-npm install
-```
+Click **Save and deploy**
 
-### Paso 5: Configurar Wrangler
+### Paso 5: Configurar Webhook en Discord
 
-1. **Inicia sesión en Cloudflare**:
-```bash
-npx wrangler login
-```
-
-2. **Crea un namespace KV** (para memoria de conversación):
-```bash
-npx wrangler kv:namespace create "CONVERSATIONS"
-```
-
-3. **Anota el ID del namespace** y actualízalo en `wrangler.toml`:
-```toml
-[[kv_namespaces]]
-binding = "CONVERSATIONS"
-id = "TU_KV_NAMESPACE_ID_AQUI"
-```
-
-### Paso 6: Configurar Secretos
-
-Configura las variables de entorno como secretos:
-
-```bash
-# Token del bot de Discord
-npx wrangler secret put DISCORD_BOT_TOKEN
-# Pega tu token cuando te lo pida
-
-# Clave pública de Discord
-npx wrangler secret put DISCORD_PUBLIC_KEY
-# Pega tu public key
-
-# ID de la aplicación
-npx wrangler secret put DISCORD_APPLICATION_ID
-# Pega tu application ID
-```
-
-### Paso 7: Desplegar el Worker
-
-```bash
-npm run deploy
-```
-
-Después del despliegue, obtendrás una URL como:
-```
-https://discord-ai-bot.TU-SUBDOMINIO.workers.dev
-```
-
-### Paso 8: Configurar Webhook en Discord
-
-1. Ve al **Portal de Desarrolladores de Discord**
+1. Ve a [Discord Developer Portal](https://discord.com/developers/applications)
 2. Selecciona tu aplicación
-3. Ve a **"General Information"**
-4. En **"Interactions Endpoint URL"**, pega tu URL del worker:
-```
-https://discord-ai-bot.TU-SUBDOMINIO.workers.dev
-```
-5. Haz clic en **"Save Changes"**
+3. **General Information** → **Interactions Endpoint URL**
+4. Pega tu URL del worker: `https://asistente-profesional.TU-SUBDOMINIO.workers.dev`
+5. Click **Save Changes**
 
-✅ Si todo está bien, verás un mensaje de éxito.
+✅ Debe aparecer "Verified"
 
-### Paso 9: Registrar Comandos Slash
+### Paso 6: Registrar Comandos Slash
 
-Opción A: **Script local** (crea un archivo `scripts/register.ts`):
+Ejecuta en tu terminal local:
 
-```typescript
-import { commands } from './src/register-commands';
-
-async function register() {
-  const response = await fetch(
-    `https://discord.com/api/v10/applications/${process.env.DISCORD_APPLICATION_ID}/commands`,
-    {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(commands),
-    }
-  );
-  
-  console.log(await response.json());
-}
-
-register();
-```
-
-Ejecuta con:
 ```bash
-DISCORD_APPLICATION_ID=tu_id DISCORD_BOT_TOKEN=tu_token npx tsx scripts/register.ts
+DISCORD_APPLICATION_ID=tu_app_id DISCORD_BOT_TOKEN=tu_token npx tsx scripts/register.ts
 ```
 
-Opción B: **Usar curl**:
-```bash
-curl -X PUT \
-  -H "Authorization: Bot TU_BOT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '[{"name":"hola","description":"Saluda al bot"},{"name":"chat","description":"Chatea con la IA","options":[{"type":3,"name":"mensaje","description":"Tu mensaje","required":true}]},{"name":"limpiar","description":"Limpia tu historial"},{"name":"ayuda","description":"Muestra los comandos"}]' \
-  "https://discord.com/api/v10/applications/TU_APPLICATION_ID/commands"
-```
+### Paso 7: Invitar el Bot
 
-### Paso 10: Invitar el Bot a tu Servidor
+1. Discord Developer Portal → **OAuth2** → **URL Generator**
+2. Selecciona: `bot` + `applications.commands`
+3. Permisos: `Send Messages`, `Use Slash Commands`, `Read Message History`
+4. Copia la URL y ábrela para invitar a tu servidor
 
-1. Ve al **Portal de Desarrolladores**
-2. Selecciona tu aplicación
-3. Ve a **"OAuth2"** → **"URL Generator"**
-4. Selecciona:
-   - ✅ `bot`
-   - ✅ `applications.commands`
-5. En **"Bot Permissions"**, selecciona:
-   - ✅ Send Messages
-   - ✅ Use Slash Commands
-   - ✅ Read Message History
-6. Copia la URL generada y ábrela en tu navegador
-7. Selecciona tu servidor y autoriza el bot
-
-## 🎮 Uso
-
-Una vez el bot esté en tu servidor, puedes usar los comandos:
+## 📋 Comandos Disponibles
 
 | Comando | Descripción |
 |---------|-------------|
-| `/hola` | Saluda al bot |
-| `/chat <mensaje>` | Chatea con la IA |
-| `/limpiar` | Limpia tu historial de conversación |
-| `/ayuda` | Muestra los comandos disponibles |
+| `/consultar <mensaje>` | Haz una consulta o pregunta |
+| `/info` | Información del asistente |
+| `/nueva` | Iniciar nueva conversación |
 
-## 🔧 Configuración Avanzada
+## 🔧 Integración con IA
 
-### Personalizar el System Prompt
-
-En `src/index.ts`, modifica la constante `SYSTEM_PROMPT`:
-
-```typescript
-const SYSTEM_PROMPT = `Eres un asistente especializado en [TU_TEMA]...
-// Personaliza según tus necesidades
-`;
-```
-
-### Cambiar Modelo de IA
-
-El worker usa un endpoint de API. Puedes modificar:
-- `model`: El modelo a usar (gpt-4, gpt-4o-mini, etc.)
-- `temperature`: Creatividad de las respuestas (0-1)
-- `max_tokens`: Longitud máxima de respuesta
-
-### Variables de Entorno Adicionales
-
-Si usas una API externa para la IA, añade:
+Para respuestas más inteligentes, añade tu API key:
 
 ```bash
 npx wrangler secret put ZAI_API_KEY
 ```
 
+Sin API key, usa respuestas predefinidas inteligentes.
+
 ## 📊 Monitoreo
 
 Ver logs en tiempo real:
 ```bash
-npm run tail
+npx wrangler tail
 ```
 
-## 🔄 Actualizaciones
+O desde Cloudflare Dashboard → Workers → Logs
 
-Para actualizar el código:
-1. Modifica los archivos necesarios
-2. Ejecuta `npm run deploy`
+## 🔒 Seguridad
 
-## ❓ Solución de Problemas
+- Los secretos nunca se suben al repositorio
+- Verificación de firma Ed25519 en cada petición
+- Variables sensibles configuradas como Secrets en Cloudflare
 
-### El webhook no se puede verificar
-- Verifica que la `DISCORD_PUBLIC_KEY` sea correcta
-- Asegúrate de que la URL del worker termine en `/` o no tenga trailing slash inconsistente
-
-### Los comandos no aparecen
-- Ejecuta el script de registro de comandos
-- Espera unos minutos (puede tardar en propagarse)
-- Verifica que el bot tenga el scope `applications.commands`
-
-### La IA no responde
-- Verifica la API key de z-ai
-- Revisa los logs con `npm run tail`
-- Comprueba que el endpoint de la API esté accesible
-
-### Error de memoria KV
-- Verifica que el namespace KV esté configurado correctamente
-- Comprueba que el binding `CONVERSATIONS` coincida
-
-## 📁 Estructura del Proyecto
+## 📁 Estructura
 
 ```
-discord-bot-cloudflare/
 ├── src/
 │   ├── index.ts           # Worker principal
-│   └── register-commands.ts # Registro de comandos
-├── package.json           # Dependencias
-├── tsconfig.json          # Config TypeScript
+│   └── register-commands.ts
+├── scripts/
+│   └── register.ts        # Registro de comandos
 ├── wrangler.toml          # Config Cloudflare
-└── README.md              # Este archivo
+├── package.json
+└── DEPLOY.md              # Guía detallada
 ```
 
-## 📜 Licencia
+## 📝 Licencia
 
-MIT License - Siéntete libre de modificar y usar según tus necesidades.
-
-## 🤝 Contribuciones
-
-¡Las contribuciones son bienvenidas! Abre un issue o pull request.
+MIT

@@ -3,10 +3,14 @@ main = "src/index.ts"
 compatibility_date = "2024-01-01"
 
 # Configuración de KV para memoria de conversación
-[[kv_namespaces]]
-binding = "CONVERSATIONS"
-id = "TU_KV_NAMESPACE_ID"
+# El ID se configurará automáticamente cuando crees el KV namespace desde Cloudflare Dashboard
+# [[kv_namespaces]]
+# binding = "CONVERSATIONS"
+# id = "ID_DEL_KV_NAMESPACE"
 
-# Variables de entorno
+# Variables de entorno (no sensibles)
 [vars]
 ENVIRONMENT = "production"
+
+# Los secretos (DISCORD_BOT_TOKEN, DISCORD_PUBLIC_KEY, DISCORD_APPLICATION_ID)
+# se configuran desde Cloudflare Dashboard → Workers → Settings → Variables
