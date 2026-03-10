@@ -1,0 +1,12 @@
+name = "asistente-profesional"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# Configuración de KV para memoria de conversación
+[[kv_namespaces]]
+binding = "CONVERSATIONS"
+id = "TU_KV_NAMESPACE_ID"
+
+# Variables de entorno
+[vars]
+ENVIRONMENT = "production"

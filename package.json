@@ -1,0 +1,20 @@
+{
+  "name": "discord-ai-bot-cloudflare",
+  "version": "1.0.0",
+  "description": "Bot de Discord con IA usando Cloudflare Workers",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "dependencies": {
+    "discord-api-types": "^0.37.71",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240117.0",
+    "typescript": "^5.3.3",
+    "wrangler": "^3.24.0"
+  }
+}
